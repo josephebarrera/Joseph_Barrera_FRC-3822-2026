@@ -5,9 +5,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.swervedrive.AgitatorSubsystem;
-import frc.robot.subsystems.swervedrive.IntakeSubsystem;
-import frc.robot.subsystems.swervedrive.ShooterSubsystem;
+import frc.robot.subsystems.swervedrive.Agitator;
+import frc.robot.subsystems.swervedrive.Intake;
+import frc.robot.subsystems.swervedrive.Shooter;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -27,11 +27,11 @@ public class RobotContainer
     private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
 
     //Created a shooter
-    ShooterSubsystem shooter = new ShooterSubsystem();
+    Shooter shooter = new Shooter();
     //Created a agitator
-    AgitatorSubsystem agitator = new AgitatorSubsystem();
+    Agitator agitator = new Agitator();
     //Create a intake
-    IntakeSubsystem intake = new IntakeSubsystem();
+    Intake intake = new Intake();
 
     /**
     * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
@@ -63,7 +63,6 @@ public class RobotContainer
     {
       //Register Commands:
       NamedCommands.registerCommand("Shoot Forward", shooter.shootForward());
-      NamedCommands.registerCommand("Move 5FT From The Starting Point", getAutonomousCommand());
     }
 
     private void configureBindings()
@@ -93,13 +92,22 @@ public class RobotContainer
      */
     public Command getAutonomousCommand()
     {
-      // Pass in the selected auto from the SmartDashboard as our desired autnomous commmand 
-      return null;
+          // Return the swerve subsystem command for this path
+    return null;
     }
 
     public void setMotorBrake(boolean brake)
     {
       drivebase.setMotorBrake(brake);
+    }
+
+     /*********************************************************************** Commands *************************************************************************/
+    public Command intakeBalls()
+    {
+      return Commands.parallel(
+                  intake.spinIntakeForward(),
+                  agitator.funnelForward()
+            );
     }
 
 }
