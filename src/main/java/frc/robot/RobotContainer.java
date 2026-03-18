@@ -1,25 +1,19 @@
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.swervedrive.AgitatorSubsystem;
+import frc.robot.subsystems.swervedrive.IntakeSubsystem;
+import frc.robot.subsystems.swervedrive.ShooterSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
+
+import com.pathplanner.lib.auto.NamedCommands;
+
 import swervelib.SwerveInputStream;
 
 /**
@@ -30,18 +24,21 @@ import swervelib.SwerveInputStream;
 public class RobotContainer
 {
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  final         CommandXboxController driverXbox = new CommandXboxController(0);
-  // The robot's subsystems and commands are defined here...
-  private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
+    final CommandXboxController driverXbox = new CommandXboxController(0);
+    // The robot's subsystems and commands are defined here...
+    private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
 
-  // Establish a Sendable Chooser that will be able to be sent to the SmartDashboard, allowing selection of desired auto
-  private final SendableChooser<Command> autoChooser;
+    //Created a shooter
+    ShooterSubsystem shooter = new ShooterSubsystem();
+    //Created a agitator
+    AgitatorSubsystem agitator = new AgitatorSubsystem();
+    //Create a intake
+    IntakeSubsystem intake = new IntakeSubsystem();
 
-  /**
-   * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
-   */
- public SwerveInputStream driveInputStream = SwerveInputStream.of(drivebase.getSwerveDrive(),
+    /**
+    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
+    */
+    public SwerveInputStream driveInputStream = SwerveInputStream.of(drivebase.getSwerveDrive(),
       () -> driverXbox.getLeftY() * 1,
       () -> driverXbox.getLeftX() * 1)
       .withControllerHeadingAxis(() -> driverXbox.getRightX() * 1, () -> driverXbox.getRightY() * 1)
@@ -50,42 +47,41 @@ public class RobotContainer
       .allianceRelativeControl(true)
       .headingWhile(true);
 
-  /**
+    /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer()
   {
     // Configure the trigger bindings
     configureBindings();
+    setupPathPlannerCommands();
     DriverStation.silenceJoystickConnectionWarning(true);
-    
-    //Create the NamedCommands that will be used in PathPlanner
-    NamedCommands.registerCommand("test", Commands.print("I EXIST"));
-
-    //Have the autoChooser pull in all PathPlanner autos as options
-    autoChooser = AutoBuilder.buildAutoChooser();
-
-    //Set the default auto (do nothing) 
-    autoChooser.setDefaultOption("Do Nothing", Commands.none());
-
-    //Add a simple auto option to have the robot drive forward for 1 second then stop
-    autoChooser.addOption("Drive Forward", drivebase.driveForward().withTimeout(1));
-
-    //Put the autoChooser on the SmartDashboard
-    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary predicate, or via the
-   * named factories in {@link edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for
-   * {@link CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller PS4}
-   * controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight joysticks}.
-   */
+  private void setupPathPlannerCommands()
+  {
+    NamedCommands.registerCommand("Shoot Forward", shooter.shootForward());
+  }
+
   private void configureBindings()
   {
     Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveInputStream);
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+    drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+
+    driverXbox.start().onTrue(
+      Commands.runOnce(() ->
+      {
+        drivebase.resetOdometry(null);
+      })
+    );
+
+      //Right trigger
+      driverXbox.rightTrigger()
+          .whileTrue(shooter.shootForward())
+          .onFalse(shooter.shootStop());
+
+      //driverXbox.leftBumper()
+          //.toggleOnTrue();
   }
 
   /**
@@ -96,7 +92,7 @@ public class RobotContainer
   public Command getAutonomousCommand()
   {
     // Pass in the selected auto from the SmartDashboard as our desired autnomous commmand 
-    return autoChooser.getSelected();
+    return null;
   }
 
   public void setMotorBrake(boolean brake)

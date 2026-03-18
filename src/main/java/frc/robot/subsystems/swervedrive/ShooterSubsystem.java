@@ -1,0 +1,83 @@
+package frc.robot.subsystems.swervedrive;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+public class ShooterSubsystem extends SubsystemBase
+{
+    SparkMax shooterIntake = new SparkMax(14, MotorType.kBrushless);
+    SparkMax shooterLeft = new SparkMax(12, MotorType.kBrushless);
+    SparkMax shooterRight = new SparkMax(13, MotorType.kBrushless);
+
+    public Command spinShooterIntake()
+    {
+        return Commands.runOnce(()->
+        {
+            shooterIntake.set(-100.0);
+        });
+    }
+
+    public Command stopShooterIntake()
+    {
+        return Commands.runOnce(()->
+        {
+            shooterIntake.set(0.0);
+        });
+    }
+    
+    public Command spinTopShooterReverse() 
+    {
+        return Commands.runOnce(()->
+        {
+            shooterLeft.set(100.0);
+            shooterRight.set(-100.0);
+        });
+    }
+
+    public Command spinTopShooter() 
+    {
+        return Commands.runOnce(()->
+        {
+            shooterLeft.set(-100.0);
+            shooterRight.set(100.0);
+        });
+    }
+
+    public Command shootForward() 
+    {
+        return Commands.parallel(
+            spinShooterIntake(),
+            spinTopShooter()
+        );
+    }
+
+    public Command shootStop() 
+    {
+        return Commands.parallel(
+            stopShooterIntake(),
+            stopTopShooter()
+        );
+    }
+
+    public Command stopTopShooter() 
+    {
+        return Commands.runOnce(()->
+        {
+            shooterLeft.set(0.0);
+            shooterRight.set(0.0);
+        });
+    }
+
+    public Command goToLaunchAngle(double angle) 
+    {
+        return Commands.runOnce(()->{});
+    }
+
+    public Command turnToAngle(double angle) 
+    {
+        return Commands.runOnce(()->{});
+    }
+}
