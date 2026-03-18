@@ -8,8 +8,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase
 {
+    //Use the SparkMax to create the motors for the Intake
     SparkMax intake = new SparkMax(10, MotorType.kBrushless);
 
+    //************************************************* Commands *************************************************/
     public Command spinIntakeForward() 
     {
         return Commands.runOnce(()->

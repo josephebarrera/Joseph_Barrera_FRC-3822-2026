@@ -8,11 +8,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterSubsystem extends SubsystemBase
 {
-    //Use SparkMax to create the motors
+    //Use SparkMax to create the motors for the Shooter
     SparkMax shooterIntake = new SparkMax(14, MotorType.kBrushless);
     SparkMax shooterLeft = new SparkMax(12, MotorType.kBrushless);
     SparkMax shooterRight = new SparkMax(13, MotorType.kBrushless);
 
+    //************************************************* Commands *************************************************/
     public Command spinShooterIntake()
     {
         return Commands.runOnce(()->

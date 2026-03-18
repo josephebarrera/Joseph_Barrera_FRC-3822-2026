@@ -8,8 +8,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class AgitatorSubsystem extends SubsystemBase
 {
+    //Use SparkMax to create the motors for the agitator
     SparkMax agitator = new SparkMax(15, MotorType.kBrushless);
 
+    //************************************************* Commands *************************************************/
     public Command funnelForward()
     {
         return Commands.runOnce(()->
