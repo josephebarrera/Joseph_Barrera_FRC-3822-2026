@@ -223,6 +223,244 @@ public class SwerveSubsystem extends SubsystemBase
   }
 
   /**
+   * Drive according to the chassis robot oriented velocity.
+   *
+   * @param velocity Robot oriented {@link ChassisSpeeds}
+   */
+  public void drive(ChassisSpeeds velocity)
+  {
+    swerveDrive.drive(velocity);
+  }
+
+  /**
+   * Get the swerve drive kinematics object.
+   *
+   * @return {@link SwerveDriveKinematics} of the swerve drive.
+   */
+  public SwerveDriveKinematics getKinematics()
+  {
+    return swerveDrive.kinematics;
+  }
+
+  /**
+   * Resets odometry to the given pose. Gyro angle and module positions do not need to be reset when calling this
+   * method.  However, if either gyro angle or module position is reset, this must be called in order for odometry to
+   * keep working.
+   *
+   * @param initialHolonomicPose The pose to set the odometry to
+   */
+  public void resetOdometry(Pose2d initialHolonomicPose)
+  {
+    swerveDrive.resetOdometry(initialHolonomicPose);
+  }
+
+  /**
+   * Gets the current pose (position and rotation) of the robot, as reported by odometry.
+   *
+   * @return The robot's pose
+   */
+  public Pose2d getPose()
+  {
+    return swerveDrive.getPose();
+  }
+
+  /**
+   * Set chassis speeds with closed-loop velocity control.
+   *
+   * @param chassisSpeeds Chassis Speeds to set.
+   */
+  public void setChassisSpeeds(ChassisSpeeds chassisSpeeds)
+  {
+    swerveDrive.setChassisSpeeds(chassisSpeeds);
+  }
+
+  /**
+   * Post the trajectory to the field.
+   *
+   * @param trajectory The trajectory to post.
+   */
+  public void postTrajectory(Trajectory trajectory)
+  {
+    swerveDrive.postTrajectory(trajectory);
+  }
+
+  /**
+   * Resets the gyro angle to zero and resets odometry to the same position, but facing toward 0.
+   */
+  public void zeroGyro()
+  {
+    swerveDrive.zeroGyro();
+  }
+
+  /**
+   * Checks if the alliance is red, defaults to false if alliance isn't available.
+   *
+   * @return true if the red alliance, false if blue. Defaults to false if none is available.
+   */
+  private boolean isRedAlliance()
+  {
+    var alliance = DriverStation.getAlliance();
+    return alliance.isPresent() ? alliance.get() == DriverStation.Alliance.Red : false;
+  }
+
+  /**
+   * This will zero (calibrate) the robot to assume the current position is facing forward
+   * <p>
+   * If red alliance rotate the robot 180 after the drviebase zero command
+   */
+  public void zeroGyroWithAlliance()
+  {
+    if (isRedAlliance())
+    {
+      zeroGyro();
+      //Set the pose 180 degrees
+      resetOdometry(new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(180)));
+    } else
+    {
+      zeroGyro();
+    }
+  }
+
+  /**
+   * Sets the drive motors to brake/coast mode.
+   *
+   * @param brake True to set motors to brake mode, false for coast.
+   */
+  public void setMotorBrake(boolean brake)
+  {
+    swerveDrive.setMotorIdleMode(brake);
+  }
+
+  /**
+   * Gets the current yaw angle of the robot, as reported by the swerve pose estimator in the underlying drivebase.
+   * Note, this is not the raw gyro reading, this may be corrected from calls to resetOdometry().
+   *
+   * @return The yaw angle
+   */
+  public Rotation2d getHeading()
+  {
+    return getPose().getRotation();
+  }
+
+  /**
+   * Get the chassis speeds based on controller input of 2 joysticks. One for speeds in which direction. The other for
+   * the angle of the robot.
+   *
+   * @param xInput   X joystick input for the robot to move in the X direction.
+   * @param yInput   Y joystick input for the robot to move in the Y direction.
+   * @param headingX X joystick which controls the angle of the robot.
+   * @param headingY Y joystick which controls the angle of the robot.
+   * @return {@link ChassisSpeeds} which can be sent to the Swerve Drive.
+   */
+  public ChassisSpeeds getTargetSpeeds(double xInput, double yInput, double headingX, double headingY)
+  {
+    Translation2d scaledInputs = SwerveMath.cubeTranslation(new Translation2d(xInput, yInput));
+    return swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(),
+                                                        scaledInputs.getY(),
+                                                        headingX,
+                                                        headingY,
+                                                        getHeading().getRadians(),
+                                                        Constants.MAX_SPEED);
+  }
+
+  /**
+   * Get the chassis speeds based on controller input of 1 joystick and one angle. Control the robot at an offset of
+   * 90deg.
+   *
+   * @param xInput X joystick input for the robot to move in the X direction.
+   * @param yInput Y joystick input for the robot to move in the Y direction.
+   * @param angle  The angle in as a {@link Rotation2d}.
+   * @return {@link ChassisSpeeds} which can be sent to the Swerve Drive.
+   */
+  public ChassisSpeeds getTargetSpeeds(double xInput, double yInput, Rotation2d angle)
+  {
+    Translation2d scaledInputs = SwerveMath.cubeTranslation(new Translation2d(xInput, yInput));
+
+    return swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(),
+                                                        scaledInputs.getY(),
+                                                        angle.getRadians(),
+                                                        getHeading().getRadians(),
+                                                        Constants.MAX_SPEED);
+  }
+
+  /**
+   * Gets the current field-relative velocity (x, y and omega) of the robot
+   *
+   * @return A ChassisSpeeds object of the current field-relative velocity
+   */
+  public ChassisSpeeds getFieldVelocity()
+  {
+    return swerveDrive.getFieldVelocity();
+  }
+
+  /**
+   * Gets the current velocity (x, y and omega) of the robot
+   *
+   * @return A {@link ChassisSpeeds} object of the current velocity
+   */
+  public ChassisSpeeds getRobotVelocity()
+  {
+    return swerveDrive.getRobotVelocity();
+  }
+
+  /**
+   * Get the {@link SwerveController} in the swerve drive.
+   *
+   * @return {@link SwerveController} from the {@link SwerveDrive}.
+   */
+  public SwerveController getSwerveController()
+  {
+    return swerveDrive.swerveController;
+  }
+
+  /**
+   * Get the {@link SwerveDriveConfiguration} object.
+   *
+   * @return The {@link SwerveDriveConfiguration} fpr the current drive.
+   */
+  public SwerveDriveConfiguration getSwerveDriveConfiguration()
+  {
+    return swerveDrive.swerveDriveConfiguration;
+  }
+
+  /**
+   * Lock the swerve drive to prevent it from moving.
+   */
+  public void lock()
+  {
+    swerveDrive.lockPose();
+  }
+
+  /**
+   * Gets the current pitch angle of the robot, as reported by the imu.
+   *
+   * @return The heading as a {@link Rotation2d} angle
+   */
+  public Rotation2d getPitch()
+  {
+    return swerveDrive.getPitch();
+  }
+
+  /**
+   * Add a fake vision reading for testing purposes.
+   */
+  public void addFakeVisionReading()
+  {
+    swerveDrive.addVisionMeasurement(new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp());
+  }
+
+  /**
+   * Gets the swerve drive object.
+   *
+   * @return {@link SwerveDrive}
+   */
+  public SwerveDrive getSwerveDrive()
+  {
+    return swerveDrive;
+  }
+
+  /****************************************************************************************** Commands ************************************************************************************************* */
+  /**
    * Aim the robot at the target returned by PhotonVision.
    *
    * @return A {@link Command} which will run the alignment.
@@ -490,242 +728,5 @@ public class SwerveSubsystem extends SubsystemBase
     return run(() -> {
       swerveDrive.driveFieldOriented(velocity.get());
     });
-  }
-
-  /**
-   * Drive according to the chassis robot oriented velocity.
-   *
-   * @param velocity Robot oriented {@link ChassisSpeeds}
-   */
-  public void drive(ChassisSpeeds velocity)
-  {
-    swerveDrive.drive(velocity);
-  }
-
-  /**
-   * Get the swerve drive kinematics object.
-   *
-   * @return {@link SwerveDriveKinematics} of the swerve drive.
-   */
-  public SwerveDriveKinematics getKinematics()
-  {
-    return swerveDrive.kinematics;
-  }
-
-  /**
-   * Resets odometry to the given pose. Gyro angle and module positions do not need to be reset when calling this
-   * method.  However, if either gyro angle or module position is reset, this must be called in order for odometry to
-   * keep working.
-   *
-   * @param initialHolonomicPose The pose to set the odometry to
-   */
-  public void resetOdometry(Pose2d initialHolonomicPose)
-  {
-    swerveDrive.resetOdometry(initialHolonomicPose);
-  }
-
-  /**
-   * Gets the current pose (position and rotation) of the robot, as reported by odometry.
-   *
-   * @return The robot's pose
-   */
-  public Pose2d getPose()
-  {
-    return swerveDrive.getPose();
-  }
-
-  /**
-   * Set chassis speeds with closed-loop velocity control.
-   *
-   * @param chassisSpeeds Chassis Speeds to set.
-   */
-  public void setChassisSpeeds(ChassisSpeeds chassisSpeeds)
-  {
-    swerveDrive.setChassisSpeeds(chassisSpeeds);
-  }
-
-  /**
-   * Post the trajectory to the field.
-   *
-   * @param trajectory The trajectory to post.
-   */
-  public void postTrajectory(Trajectory trajectory)
-  {
-    swerveDrive.postTrajectory(trajectory);
-  }
-
-  /**
-   * Resets the gyro angle to zero and resets odometry to the same position, but facing toward 0.
-   */
-  public void zeroGyro()
-  {
-    swerveDrive.zeroGyro();
-  }
-
-  /**
-   * Checks if the alliance is red, defaults to false if alliance isn't available.
-   *
-   * @return true if the red alliance, false if blue. Defaults to false if none is available.
-   */
-  private boolean isRedAlliance()
-  {
-    var alliance = DriverStation.getAlliance();
-    return alliance.isPresent() ? alliance.get() == DriverStation.Alliance.Red : false;
-  }
-
-  /**
-   * This will zero (calibrate) the robot to assume the current position is facing forward
-   * <p>
-   * If red alliance rotate the robot 180 after the drviebase zero command
-   */
-  public void zeroGyroWithAlliance()
-  {
-    if (isRedAlliance())
-    {
-      zeroGyro();
-      //Set the pose 180 degrees
-      resetOdometry(new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(180)));
-    } else
-    {
-      zeroGyro();
-    }
-  }
-
-  /**
-   * Sets the drive motors to brake/coast mode.
-   *
-   * @param brake True to set motors to brake mode, false for coast.
-   */
-  public void setMotorBrake(boolean brake)
-  {
-    swerveDrive.setMotorIdleMode(brake);
-  }
-
-  /**
-   * Gets the current yaw angle of the robot, as reported by the swerve pose estimator in the underlying drivebase.
-   * Note, this is not the raw gyro reading, this may be corrected from calls to resetOdometry().
-   *
-   * @return The yaw angle
-   */
-  public Rotation2d getHeading()
-  {
-    return getPose().getRotation();
-  }
-
-  /**
-   * Get the chassis speeds based on controller input of 2 joysticks. One for speeds in which direction. The other for
-   * the angle of the robot.
-   *
-   * @param xInput   X joystick input for the robot to move in the X direction.
-   * @param yInput   Y joystick input for the robot to move in the Y direction.
-   * @param headingX X joystick which controls the angle of the robot.
-   * @param headingY Y joystick which controls the angle of the robot.
-   * @return {@link ChassisSpeeds} which can be sent to the Swerve Drive.
-   */
-  public ChassisSpeeds getTargetSpeeds(double xInput, double yInput, double headingX, double headingY)
-  {
-    Translation2d scaledInputs = SwerveMath.cubeTranslation(new Translation2d(xInput, yInput));
-    return swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(),
-                                                        scaledInputs.getY(),
-                                                        headingX,
-                                                        headingY,
-                                                        getHeading().getRadians(),
-                                                        Constants.MAX_SPEED);
-  }
-
-  /**
-   * Get the chassis speeds based on controller input of 1 joystick and one angle. Control the robot at an offset of
-   * 90deg.
-   *
-   * @param xInput X joystick input for the robot to move in the X direction.
-   * @param yInput Y joystick input for the robot to move in the Y direction.
-   * @param angle  The angle in as a {@link Rotation2d}.
-   * @return {@link ChassisSpeeds} which can be sent to the Swerve Drive.
-   */
-  public ChassisSpeeds getTargetSpeeds(double xInput, double yInput, Rotation2d angle)
-  {
-    Translation2d scaledInputs = SwerveMath.cubeTranslation(new Translation2d(xInput, yInput));
-
-    return swerveDrive.swerveController.getTargetSpeeds(scaledInputs.getX(),
-                                                        scaledInputs.getY(),
-                                                        angle.getRadians(),
-                                                        getHeading().getRadians(),
-                                                        Constants.MAX_SPEED);
-  }
-
-  /**
-   * Gets the current field-relative velocity (x, y and omega) of the robot
-   *
-   * @return A ChassisSpeeds object of the current field-relative velocity
-   */
-  public ChassisSpeeds getFieldVelocity()
-  {
-    return swerveDrive.getFieldVelocity();
-  }
-
-  /**
-   * Gets the current velocity (x, y and omega) of the robot
-   *
-   * @return A {@link ChassisSpeeds} object of the current velocity
-   */
-  public ChassisSpeeds getRobotVelocity()
-  {
-    return swerveDrive.getRobotVelocity();
-  }
-
-  /**
-   * Get the {@link SwerveController} in the swerve drive.
-   *
-   * @return {@link SwerveController} from the {@link SwerveDrive}.
-   */
-  public SwerveController getSwerveController()
-  {
-    return swerveDrive.swerveController;
-  }
-
-  /**
-   * Get the {@link SwerveDriveConfiguration} object.
-   *
-   * @return The {@link SwerveDriveConfiguration} fpr the current drive.
-   */
-  public SwerveDriveConfiguration getSwerveDriveConfiguration()
-  {
-    return swerveDrive.swerveDriveConfiguration;
-  }
-
-  /**
-   * Lock the swerve drive to prevent it from moving.
-   */
-  public void lock()
-  {
-    swerveDrive.lockPose();
-  }
-
-  /**
-   * Gets the current pitch angle of the robot, as reported by the imu.
-   *
-   * @return The heading as a {@link Rotation2d} angle
-   */
-  public Rotation2d getPitch()
-  {
-    return swerveDrive.getPitch();
-  }
-
-  /**
-   * Add a fake vision reading for testing purposes.
-   */
-  public void addFakeVisionReading()
-  {
-    swerveDrive.addVisionMeasurement(new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp());
-  }
-
-  /**
-   * Gets the swerve drive object.
-   *
-   * @return {@link SwerveDrive}
-   */
-  public SwerveDrive getSwerveDrive()
-  {
-    return swerveDrive;
   }
 }
