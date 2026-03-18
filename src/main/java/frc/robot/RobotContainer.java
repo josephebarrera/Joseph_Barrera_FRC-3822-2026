@@ -1,5 +1,4 @@
 package frc.robot;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -11,9 +10,7 @@ import frc.robot.subsystems.swervedrive.IntakeSubsystem;
 import frc.robot.subsystems.swervedrive.ShooterSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
-
 import com.pathplanner.lib.auto.NamedCommands;
-
 import swervelib.SwerveInputStream;
 
 /**
@@ -25,6 +22,7 @@ public class RobotContainer
 {
 
     final CommandXboxController driverXbox = new CommandXboxController(0);
+
     // The robot's subsystems and commands are defined here...
     private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
 
@@ -39,8 +37,8 @@ public class RobotContainer
     * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
     */
     public SwerveInputStream driveInputStream = SwerveInputStream.of(drivebase.getSwerveDrive(),
-      () -> driverXbox.getLeftY() * 1,
-      () -> driverXbox.getLeftX() * 1)
+    () -> driverXbox.getLeftY() * 1,
+    () -> driverXbox.getLeftX() * 1)
       .withControllerHeadingAxis(() -> driverXbox.getRightX() * 1, () -> driverXbox.getRightY() * 1)
       .deadband(Constants.OperatorConstants.DEADBAND)
       .scaleTranslation(0.5)
@@ -50,52 +48,58 @@ public class RobotContainer
     /**
     * The container for the robot. Contains subsystems, OI devices, and commands.
     */
-  public RobotContainer()
-  {
-    // Configure the trigger bindings
-    configureBindings();
-    setupPathPlannerCommands();
-    DriverStation.silenceJoystickConnectionWarning(true);
-  }
+    public RobotContainer()
+    {
+      //Configure the trigger bindings
+      configureBindings();
 
-  private void setupPathPlannerCommands()
-  {
-    NamedCommands.registerCommand("Shoot Forward", shooter.shootForward());
-  }
+      //Configure the PathPlanner commands
+      setupPathPlannerCommands();
 
-  private void configureBindings()
-  {
-    Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveInputStream);
-    drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+      DriverStation.silenceJoystickConnectionWarning(true);
+    }
 
-    driverXbox.start().onTrue(
-      Commands.runOnce(() ->
-      {
-        drivebase.resetOdometry(null);
-      }));
+    private void setupPathPlannerCommands()
+    {
+      //Register Commands:
+      NamedCommands.registerCommand("Shoot Forward", shooter.shootForward());
+      NamedCommands.registerCommand("Move 5FT From The Starting Point", getAutonomousCommand());
+    }
 
-      //Right trigger
+    private void configureBindings()
+    {
+
+      Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveInputStream);
+      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+
+      //Reset Odomometry on the Xbox Controller
+      driverXbox.start().onTrue(
+        Commands.runOnce(() ->
+        {
+          drivebase.resetOdometry(null);
+        }));
+
+      //Right trigger on the Xbox Controller
       driverXbox.rightTrigger()
         .whileTrue(shooter.shootForward())
         .onFalse(shooter.shootStop());
 
-      //driverXbox.leftBumper()
-          //.toggleOnTrue();
-  }
+    }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand()
-  {
-    // Pass in the selected auto from the SmartDashboard as our desired autnomous commmand 
-    return null;
-  }
+    /**
+     * Use this to pass the autonomous command to the main {@link Robot} class.
+     *
+     * @return the command to run in autonomous
+     */
+    public Command getAutonomousCommand()
+    {
+      // Pass in the selected auto from the SmartDashboard as our desired autnomous commmand 
+      return null;
+    }
 
-  public void setMotorBrake(boolean brake)
-  {
-    drivebase.setMotorBrake(brake);
-  }
+    public void setMotorBrake(boolean brake)
+    {
+      drivebase.setMotorBrake(brake);
+    }
+
 }
