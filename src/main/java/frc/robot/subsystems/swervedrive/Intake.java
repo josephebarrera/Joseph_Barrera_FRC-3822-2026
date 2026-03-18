@@ -15,8 +15,11 @@ public class Intake extends SubsystemBase
     //Create the relative encoder to get the values 
     private final RelativeEncoder armEncoder = armJoint.getEncoder();
 
-    //Add a target position
+    //Add a target open position
     private final double OPEN_POSITION = 10; //TUNE LATER
+
+    //Add a target closed position
+    private final double CLOSED_POSITION = 0;
 
     //************************************************* Commands *************************************************/
     public Command spinIntakeForward() 
@@ -29,13 +32,23 @@ public class Intake extends SubsystemBase
 
     public Command foldOpenIntake()
     {
-        return Commands.runOnce(()->
+        return Commands.run(()->
         {
             armJoint.set(0.3); //slow and safely
             System.out.println(armEncoder.getPosition()); //will help us tune 
         })
         .until(()-> armEncoder.getPosition() >= OPEN_POSITION)
         .finallyDo(()-> armJoint.set(0));
+    }
+
+    public Command foldCloseIntake()
+    {
+        return Commands.run(()->
+        {
+            armJoint.set(-0.2); //reverse the direction
+        })
+        .until(()->armEncoder.getPosition() <= CLOSED_POSITION)
+        .finallyDo(()->armJoint.set(0));
     }
 
     public Command spinIntakeReverse() 
