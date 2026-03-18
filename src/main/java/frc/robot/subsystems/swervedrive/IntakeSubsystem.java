@@ -10,20 +10,26 @@ public class IntakeSubsystem extends SubsystemBase
 {
     SparkMax intake = new SparkMax(10, MotorType.kBrushless);
 
-    public Command spinIntakeForward() {
-        return Commands.runOnce(()->{
+    public Command spinIntakeForward() 
+    {
+        return Commands.runOnce(()->
+        {
             intake.set(-100.0);
         });
     }
 
-    public Command spinIntakeReverse() {
-        return Commands.runOnce(()->{
+    public Command spinIntakeReverse() 
+    {
+        return Commands.runOnce(()->
+        {
             intake.set(100.0);
         });
     }
 
-    public Command spinIntakeStop() {
-        return Commands.runOnce(()->{
+    public Command spinIntakeStop() 
+    {
+        return Commands.runOnce(()->
+        {
             intake.set(0.0);
         });
     }

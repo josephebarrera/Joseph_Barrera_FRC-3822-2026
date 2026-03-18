@@ -10,21 +10,27 @@ public class AgitatorSubsystem extends SubsystemBase
 {
     SparkMax agitator = new SparkMax(15, MotorType.kBrushless);
 
-    public Command funnelForward() {
-        return Commands.runOnce(()->{
+    public Command funnelForward()
+    {
+        return Commands.runOnce(()->
+        {
             System.out.println("Setting funnel speed to ");
             agitator.set(-1);
         });
     }
 
-    public Command funnelReverse() {
-        return Commands.runOnce(()->{
+    public Command funnelReverse()
+    {
+        return Commands.runOnce(()->
+        {
             agitator.set(-100.0);
         });
     }
 
-    public Command funnelStop() {
-        return Commands.runOnce(()->{
+    public Command funnelStop() 
+    {
+        return Commands.runOnce(()->
+        {
             agitator.set(0.0);
         });
     }

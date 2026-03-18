@@ -72,13 +72,12 @@ public class RobotContainer
       Commands.runOnce(() ->
       {
         drivebase.resetOdometry(null);
-      })
-    );
+      }));
 
       //Right trigger
       driverXbox.rightTrigger()
-          .whileTrue(shooter.shootForward())
-          .onFalse(shooter.shootStop());
+        .whileTrue(shooter.shootForward())
+        .onFalse(shooter.shootStop());
 
       //driverXbox.leftBumper()
           //.toggleOnTrue();
