@@ -4,20 +4,38 @@ import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import com.revrobotics.RelativeEncoder;
 
 public class Intake extends SubsystemBase
 {
     //Use the SparkMax to create the motors for the Intake
     SparkMax intake = new SparkMax(10, MotorType.kBrushless);
+    SparkMax armJoint = new SparkMax(29, MotorType.kBrushless);
+
+    //Create the relative encoder to get the values 
+    private final RelativeEncoder armEncoder = armJoint.getEncoder();
+
+    //Add a target position
+    private final double OPEN_POSITION = 10; //TUNE LATER
 
     //************************************************* Commands *************************************************/
-   
     public Command spinIntakeForward() 
     {
         return Commands.runOnce(()->
         {
             intake.set(-100.0);
         });
+    }
+
+    public Command foldOpenIntake()
+    {
+        return Commands.runOnce(()->
+        {
+            armJoint.set(0.3); //slow and safely
+            System.out.println(armEncoder.getPosition()); //will help us tune 
+        })
+        .until(()-> armEncoder.getPosition() >= OPEN_POSITION)
+        .finallyDo(()-> armJoint.set(0));
     }
 
     public Command spinIntakeReverse() 

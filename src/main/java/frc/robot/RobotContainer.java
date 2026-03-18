@@ -63,11 +63,11 @@ public class RobotContainer
     {
       //Register Commands:
       NamedCommands.registerCommand("Shoot Forward", shooter.shootForward());
+      NamedCommands.registerCommand("Open Intake Middle", intake.foldOpenIntake());
     }
 
     private void configureBindings()
     {
-
       Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveInputStream);
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
 
@@ -82,7 +82,6 @@ public class RobotContainer
       driverXbox.rightTrigger()
         .whileTrue(shooter.shootForward())
         .onFalse(shooter.shootStop());
-
     }
 
     /**
@@ -105,6 +104,7 @@ public class RobotContainer
     public Command intakeBalls()
     {
       return Commands.parallel(
+                  
                   intake.spinIntakeForward(),
                   agitator.funnelForward()
             );
