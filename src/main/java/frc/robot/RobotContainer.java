@@ -10,15 +10,14 @@ import frc.robot.subsystems.swervedrive.Intake;
 import frc.robot.subsystems.swervedrive.Shooter;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.subsystems.swervedrive.Turret;
+import java.io.File;
+import com.pathplanner.lib.auto.NamedCommands;
+import swervelib.SwerveInputStream;
 
 //If anything goes wrong delete these imports
 //Line 16-17
 import frc.robot.subsystems.swervedrive.Vision;
 import frc.robot.commands.swervedrive.AimTurretCommand;
-
-import java.io.File;
-import com.pathplanner.lib.auto.NamedCommands;
-import swervelib.SwerveInputStream;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -131,5 +130,4 @@ public class RobotContainer
       intake.spinIntakeForward(),
       agitator.funnelForward());
     }
-
 }
