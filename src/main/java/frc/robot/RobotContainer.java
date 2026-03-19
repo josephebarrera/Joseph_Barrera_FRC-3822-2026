@@ -68,9 +68,18 @@ public class RobotContainer
 
     private void configureBindings()
     {
+      //FOR TRIAL USE
+      driverXbox.leftTrigger()
+        .whileTrue(intake.foldOpenIntake())
+        .onFalse(intake.foldCloseIntake());
+
+      driverXbox.leftBumper()
+        .whileTrue(intakeBalls());
+
+
       Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveInputStream);
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-
+      
       //Reset Odomometry on the Xbox Controller
       driverXbox.start().onTrue(
         Commands.runOnce(() ->
@@ -78,10 +87,10 @@ public class RobotContainer
           drivebase.resetOdometry(null);
         }));
 
-      //Right trigger on the Xbox Controller
-      driverXbox.rightTrigger()
-        .whileTrue(shooter.shootForward())
-        .onFalse(shooter.shootStop());
+      // //Right trigger on the Xbox Controller
+      // driverXbox.rightTrigger()
+      //   .whileTrue(shooter.shootForward())
+      //   .onFalse(shooter.shootStop());
     }
 
     /**
@@ -104,7 +113,7 @@ public class RobotContainer
     public Command intakeBalls()
     {
       return Commands.parallel(
-                  
+                  intake.foldOpenIntake(),
                   intake.spinIntakeForward(),
                   agitator.funnelForward()
             );
