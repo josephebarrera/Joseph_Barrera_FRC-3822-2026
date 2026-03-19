@@ -30,17 +30,20 @@ public class RobotContainer
 
     final CommandXboxController driverXbox = new CommandXboxController(0);
 
-    // The robot's subsystems and commands are defined here...
+    //The robot's subsystems and commands are defined here...
     private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
     //If anything goes wrong delete line 36
     private final Vision vision = new Vision(drivebase::getPose, drivebase.getSwerveDrive().field);
 
     //Created a shooter
     Shooter shooter = new Shooter();
+
     //Created a agitator
     Agitator agitator = new Agitator();
+
     //Create a intake
     Intake intake = new Intake();
+
     //Create a turret
     Turret turret = new Turret();
 
@@ -72,8 +75,7 @@ public class RobotContainer
 
     private void setupPathPlannerCommands()
     {
-      //Register Commands:
-      // NamedCommands.registerCommand("Shoot Forward", shooter.shootForward());
+      NamedCommands.registerCommand("Shoot Forward", shooter.shootForward());
       NamedCommands.registerCommand("Open Intake Middle", intake.foldOpenIntake());
     }
 
@@ -112,8 +114,8 @@ public class RobotContainer
      */
     public Command getAutonomousCommand()
     {
-          // Return the swerve subsystem command for this path
-    return null;
+      //Return the swerve subsystem command for this path
+      return null;
     }
 
     public void setMotorBrake(boolean brake)
@@ -125,9 +127,9 @@ public class RobotContainer
     public Command intakeBalls()
     {
       return Commands.parallel(
-        intake.foldOpenIntake(),
-        intake.spinIntakeForward(),
-        agitator.funnelForward());
+      intake.foldOpenIntake(),
+      intake.spinIntakeForward(),
+      agitator.funnelForward());
     }
 
 }
