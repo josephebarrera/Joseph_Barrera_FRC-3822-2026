@@ -329,6 +329,22 @@ public class Vision
     field2d.getObject("tracked targets").setPoses(poses);
   }
 
+  //In the case that any of this goes wrong delete line 333-346
+    public boolean hasTarget()
+  {
+    return Cameras.CENTER_CAM.getLatestResult()
+        .map(PhotonPipelineResult::hasTargets)
+        .orElse(false);
+  }
+
+  public double getTargetYaw()
+  {
+    return Cameras.CENTER_CAM.getLatestResult()
+        .filter(PhotonPipelineResult::hasTargets)
+        .map(result -> result.getBestTarget().getYaw())
+        .orElse(0.0);
+  }
+
   /**
    * Camera Enum to select each camera
    */
