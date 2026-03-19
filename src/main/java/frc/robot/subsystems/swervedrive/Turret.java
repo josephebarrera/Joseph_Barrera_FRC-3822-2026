@@ -4,12 +4,21 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import com.revrobotics.RelativeEncoder;
 
 public class Turret extends SubsystemBase
 {
-    //Use Sparkmax to create the motors for the Turret
+    //Motor
     SparkMax turret = new SparkMax(11, MotorType.kBrushless);
 
+    //Encoder
+    private final RelativeEncoder turretEncoder = turret.getEncoder();
+
+    //TEMP LIMITS. SUBJECT TO CHANGE AFTER TESTING
+    private static final double MIN_TURRET_POSITION = -45.0;
+    private static final double MAX_TURRET_POSITION = 45.0;
+
+    //PID for aiming
     private final PIDController aimPID = new PIDController(0.02, 0.0, 0.0);
 
      public Turret()
@@ -19,6 +28,22 @@ public class Turret extends SubsystemBase
 
     public void setTurretPower(double power)
     {
+        double position = getTurretAngle();
+
+        //STOP if trying to go past left limit
+        if (position <= MIN_TURRET_POSITION && power < 0)
+        {
+            turret.set(0.0);
+            return;
+        }
+
+        //STOP if trying to go past right limit
+        if (position >= MAX_TURRET_POSITION && power > 0)
+        {
+            turret.set(0.0);
+            return;
+        }
+        
         turret.set(MathUtil.clamp(power, -0.35, 0.35));
     }
 
@@ -37,5 +62,16 @@ public class Turret extends SubsystemBase
     {
         return aimPID.atSetpoint();
     }
+
+    public double getTurretAngle()
+    {
+        return turretEncoder.getPosition();
+    }
+
+    @Override
+    public void periodic()
+    {
+        System.out.println("Turret Position: " + turretEncoder.getPosition());
+    } 
 
 }

@@ -8,11 +8,11 @@ import com.revrobotics.RelativeEncoder;
 
 public class Intake extends SubsystemBase
 {
-    //Use the SparkMax to create the motors for the Intake
+    //Motors
     SparkMax intake = new SparkMax(10, MotorType.kBrushless);
     SparkMax armJoint = new SparkMax(29, MotorType.kBrushless);
 
-    //Create the relative encoder to get the values 
+    //Encoder
     private final RelativeEncoder armEncoder = armJoint.getEncoder();
 
     //Add a target open position
