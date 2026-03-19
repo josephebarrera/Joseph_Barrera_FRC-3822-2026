@@ -82,9 +82,9 @@ public class RobotContainer
     {
       /****************************************************** Trial ******************************************************/
       driverXbox.leftBumper()
-        .whileTrue(intakeBalls());
+      .whileTrue(intakeBalls());
 
-      driverXbox.leftTrigger()
+      driverXbox.leftBumper()
         .whileTrue(intake.foldOpenIntake())
         .onFalse(intake.foldCloseIntake());
 
@@ -104,6 +104,7 @@ public class RobotContainer
       driverXbox.rightTrigger()
         .whileTrue(shooter.shootForward())
         .onFalse(shooter.shootStop());
+        
     }
 
     /**
