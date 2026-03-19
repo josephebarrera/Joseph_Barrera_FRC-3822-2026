@@ -16,7 +16,7 @@ public class Agitator extends SubsystemBase
         return Commands.runOnce(()->
         {
             System.out.println("Setting funnel speed to ");
-            agitator.set(100.0);
+            agitator.set(-100.0);
         });
     }
 
@@ -24,7 +24,7 @@ public class Agitator extends SubsystemBase
     {
         return Commands.runOnce(()->
         {
-            agitator.set(-100.0);
+            agitator.set(100.0);
         });
     }
 
