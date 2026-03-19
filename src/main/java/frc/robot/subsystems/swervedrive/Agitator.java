@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Agitator extends SubsystemBase
 {
-    //Use SparkMax to create the motors for the agitator
+    //Motor
     SparkMax agitator = new SparkMax(15, MotorType.kBrushless);
 
     //************************************************* Commands *************************************************/
