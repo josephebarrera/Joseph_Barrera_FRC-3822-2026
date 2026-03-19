@@ -9,6 +9,8 @@ import frc.robot.subsystems.swervedrive.Agitator;
 import frc.robot.subsystems.swervedrive.Intake;
 import frc.robot.subsystems.swervedrive.Shooter;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import frc.robot.subsystems.swervedrive.Turret;
+
 import java.io.File;
 import com.pathplanner.lib.auto.NamedCommands;
 import swervelib.SwerveInputStream;
@@ -32,6 +34,8 @@ public class RobotContainer
     Agitator agitator = new Agitator();
     //Create a intake
     Intake intake = new Intake();
+    //Create a turret
+    Turret turret = new Turret();
 
     /**
     * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
