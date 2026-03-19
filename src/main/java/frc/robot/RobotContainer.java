@@ -79,32 +79,30 @@ public class RobotContainer
 
     private void configureBindings()
     {
-      //FOR TRIAL USE
+      /****************************************************** Trial ******************************************************/
+      driverXbox.leftBumper()
+        .whileTrue(intakeBalls());
+
       driverXbox.leftTrigger()
         .whileTrue(intake.foldOpenIntake())
         .onFalse(intake.foldCloseIntake());
 
-      driverXbox.leftBumper()
-        .whileTrue(intakeBalls());
-
       driverXbox.a()
         .whileTrue(new AimTurretCommand(vision, turret));
-
+      /******************************************************************************************************************/
 
       Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveInputStream);
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
       
-      //Reset Odomometry on the Xbox Controller
       driverXbox.start().onTrue(
         Commands.runOnce(() ->
         {
           drivebase.resetOdometry(null);
         }));
 
-      // //Right trigger on the Xbox Controller
-      // driverXbox.rightTrigger()
-      //   .whileTrue(shooter.shootForward())
-      //   .onFalse(shooter.shootStop());
+      driverXbox.rightTrigger()
+        .whileTrue(shooter.shootForward())
+        .onFalse(shooter.shootStop());
     }
 
     /**
