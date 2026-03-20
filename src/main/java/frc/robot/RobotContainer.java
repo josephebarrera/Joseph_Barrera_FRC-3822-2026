@@ -13,9 +13,6 @@ import frc.robot.subsystems.swervedrive.Turret;
 import java.io.File;
 import com.pathplanner.lib.auto.NamedCommands;
 import swervelib.SwerveInputStream;
-
-//If anything goes wrong delete these imports
-//Line 16-17
 import frc.robot.subsystems.swervedrive.Vision;
 import frc.robot.commands.swervedrive.AimTurretCommand;
 
@@ -32,6 +29,7 @@ public class RobotContainer
 
     //The robot's subsystems and commands are defined here...
     private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
+
     //If anything goes wrong delete line 36
     private final Vision vision = new Vision(drivebase::getPose, drivebase.getSwerveDrive().field);
 
@@ -58,6 +56,7 @@ public class RobotContainer
       .scaleTranslation(0.5)
       .allianceRelativeControl(true)
       .headingWhile(true);
+      
   //This is robot oriented driving. Don't touch it.
     public SwerveInputStream driveDirectAngle = driveInputStream.copy()
                         .withControllerHeadingAxis(() -> driverXbox.getRightX()*-1,
@@ -103,24 +102,15 @@ public class RobotContainer
       shooterXbox.povUp()
       .whileTrue(intake.foldCloseIntake());
 
-      //shooterXbox.povLeft().whileTrue(turret.testTurnLeft());
-      //shooterXbox.povRight().whileTrue(turret.testTurnRight());
-
       shooterXbox.rightBumper()
       .toggleOnTrue(shooter.toggleTopShooter());
 
       //Shoot
       shooterXbox.rightTrigger()
-      .whileTrue(funnelAndShoot())
-      .onFalse(Commands.parallel(
-      agitator.funnelStop(),
-      shooter.shootStop()));
+        .whileTrue(funnelAndShoot())
+        .onFalse(Commands.parallel(agitator.funnelStop(),shooter.shootStop()));
 
-      // //Aim
-      // shooterXbox.a()
-      // .whileTrue(new AimTurretCommand(vision, turret));
-
-            driverXbox.a()
+      driverXbox.a()
         .whileTrue(Commands.run(() -> turret.testTurnRight(), turret))
         .onFalse(Commands.runOnce(() -> turret.stopTurret(), turret));
 
@@ -128,7 +118,8 @@ public class RobotContainer
         .whileTrue(Commands.run(() -> turret.testTurnLeft(), turret))
         .onFalse(Commands.runOnce(() -> turret.stopTurret(), turret));
 
-      
+      //shooterXbox.povLeft().whileTrue(turret.testTurnLeft());
+      //shooterXbox.povRight().whileTrue(turret.testTurnRight());
 
       // //Reset odometry
       //  driverXbox.start().onTrue(
