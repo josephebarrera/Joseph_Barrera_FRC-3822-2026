@@ -3,6 +3,8 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.RelativeEncoder;
 
@@ -15,8 +17,8 @@ public class Turret extends SubsystemBase
     private final RelativeEncoder turretEncoder = turret.getEncoder();
 
     //TEMP LIMITS. SUBJECT TO CHANGE AFTER TESTING
-    private static final double MIN_TURRET_POSITION = -45.0;
-    private static final double MAX_TURRET_POSITION = 45.0;
+    private static final double MIN_TURRET_POSITION = -5.0;
+    private static final double MAX_TURRET_POSITION = 5.0;
 
     //PID for aiming
     private final PIDController aimPID = new PIDController(0.02, 0.0, 0.0);
@@ -50,6 +52,24 @@ public class Turret extends SubsystemBase
     public void stopTurret()
     {
         turret.set(0.0);
+    }
+
+    // public Command stopTurretTester()
+    // {
+    //     return Commands.runOnce(()->
+    //     {
+    //         turret.set(0.0);
+    //     });
+    // }
+
+        public void testTurnLeft()
+    {
+        setTurretPower(-5);
+    }
+
+    public void testTurnRight()
+    {
+        setTurretPower(5);
     }
 
     public void aimAtTarget(double yawErrorDegrees)

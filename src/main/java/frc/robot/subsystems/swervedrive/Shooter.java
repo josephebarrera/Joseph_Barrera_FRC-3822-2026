@@ -21,6 +21,21 @@ public class Shooter extends SubsystemBase
         });
     }
 
+    public Command toggleTopShooter()
+    {
+        return Commands.run(()->
+        {
+            if(shooterLeft.get()==100){
+                shooterLeft.set(0);
+                 shooterRight.set(0);
+            }
+            else{
+                shooterLeft.set(100.0);
+                shooterRight.set(-100.0);
+            }
+        });
+    }
+
     public Command stopShooterIntake()
     {
         return Commands.runOnce(()->
@@ -42,8 +57,8 @@ public class Shooter extends SubsystemBase
     {
         return Commands.runOnce(()->
         {
-            shooterLeft.set(-100.0);
-            shooterRight.set(100.0);
+            shooterLeft.set(100.0);
+            shooterRight.set(-100.0);
         });
     }
 

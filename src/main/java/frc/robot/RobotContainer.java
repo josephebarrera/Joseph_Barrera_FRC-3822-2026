@@ -27,7 +27,8 @@ import frc.robot.commands.swervedrive.AimTurretCommand;
 public class RobotContainer
 {
 
-    final CommandXboxController driverXbox = new CommandXboxController(0);
+  final CommandXboxController driverXbox = new CommandXboxController(0);
+   final CommandXboxController shooterXbox = new CommandXboxController(1);
 
     //The robot's subsystems and commands are defined here...
     private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
@@ -57,6 +58,11 @@ public class RobotContainer
       .scaleTranslation(0.5)
       .allianceRelativeControl(true)
       .headingWhile(true);
+  //This is robot oriented driving. Don't touch it.
+    public SwerveInputStream driveDirectAngle = driveInputStream.copy()
+                        .withControllerHeadingAxis(() -> driverXbox.getRightX()*-1,
+                                        () -> driverXbox.getRightY()*-1)
+                        .headingWhile(true);
 
     /**
     * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -80,31 +86,54 @@ public class RobotContainer
 
     private void configureBindings()
     {
+      driverXbox.b().onTrue(Commands.runOnce(drivebase::zeroGyro));
+
       /****************************************************** Trial ******************************************************/
-      //FIX
-      driverXbox.leftBumper()
-      .whileTrue(intakeBalls());
 
-      driverXbox.leftBumper()
-        .whileTrue(intake.foldOpenIntake())
-        .onFalse(intake.foldCloseIntake());
+      //Enable Intake
+      shooterXbox.leftBumper()
+      .whileTrue(intake.spinIntakeForward())
+      .onFalse(intake.stopIntake());
 
-      driverXbox.a()
-        .whileTrue(new AimTurretCommand(vision, turret));
+      //Open intake
+      shooterXbox.povDown()
+      .whileTrue((intake.foldOpenIntake()));
+
+      //Close intake
+      shooterXbox.povUp()
+      .whileTrue(intake.foldCloseIntake());
+
+      //shooterXbox.povLeft().whileTrue(turret.testTurnLeft());
+      //shooterXbox.povRight().whileTrue(turret.testTurnRight());
+
+      shooterXbox.rightBumper()
+      .toggleOnTrue(shooter.toggleTopShooter());
+
+      //Shoot
+      shooterXbox.rightTrigger()
+      .whileTrue(funnelAndShoot())
+      .onFalse(Commands.parallel(
+      agitator.funnelStop(),
+      shooter.shootStop()));
+
+      //Aim
+      shooterXbox.a()
+      .whileTrue(new AimTurretCommand(vision, turret));
+
+      // //Reset odometry
+      //  driverXbox.start().onTrue(
+      //   Commands.runOnce(() ->
+      //   {
+      //     drivebase.resetOdometry(null);
+      //   }));
+
       /******************************************************************************************************************/
 
       Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveInputStream);
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-      
-      driverXbox.start().onTrue(
-        Commands.runOnce(() ->
-        {
-          drivebase.resetOdometry(null);
-        }));
+      Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
 
-      driverXbox.rightTrigger()
-        .whileTrue(shooter.shootForward())
-        .onFalse(shooter.shootStop());
+       
+      drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
         
     }
 
@@ -125,11 +154,10 @@ public class RobotContainer
     }
 
      /*********************************************************************** Commands *************************************************************************/
-    public Command intakeBalls()
+    public Command funnelAndShoot()
     {
       return Commands.parallel(
-      intake.foldOpenIntake(),
-      intake.spinIntakeForward(),
-      agitator.funnelForward());
+      agitator.funnelForward(),
+      shooter.spinShooterIntake());
     }
 }

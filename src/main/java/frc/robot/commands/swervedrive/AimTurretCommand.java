@@ -22,6 +22,8 @@ public class AimTurretCommand extends Command
     @Override
     public void execute()
     {
+        System.out.println("Has Target: " + vision.hasTarget());
+        System.out.println("Target YAW: " + vision.getTargetYaw());
         if (vision.hasTarget())
         {
             double yawError = vision.getTargetYaw();

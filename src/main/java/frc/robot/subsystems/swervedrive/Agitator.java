@@ -13,7 +13,7 @@ public class Agitator extends SubsystemBase
     //************************************************* Commands *************************************************/
     public Command funnelForward()
     {
-        return Commands.runOnce(()->
+        return Commands.run(()->
         {
             System.out.println("Setting funnel speed to ");
             agitator.set(-100.0);

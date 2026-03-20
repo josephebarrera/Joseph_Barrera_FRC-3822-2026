@@ -24,9 +24,17 @@ public class Intake extends SubsystemBase
     //************************************************* Commands *************************************************/
     public Command spinIntakeForward() 
     {
-        return Commands.runOnce(()->
+        return Commands.run(()->
         {
             intake.set(-100.0);
+        });
+    }
+
+     public Command stopIntake()
+    {
+        return Commands.runOnce(()->
+        {
+            intake.set(0.0);
         });
     }
 
@@ -59,11 +67,4 @@ public class Intake extends SubsystemBase
         });
     }
 
-    public Command spinIntakeStop() 
-    {
-        return Commands.runOnce(()->
-        {
-            intake.set(0.0);
-        });
-    }
 }
