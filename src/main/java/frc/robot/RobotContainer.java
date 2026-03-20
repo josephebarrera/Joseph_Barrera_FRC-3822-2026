@@ -116,9 +116,19 @@ public class RobotContainer
       agitator.funnelStop(),
       shooter.shootStop()));
 
-      //Aim
-      shooterXbox.a()
-      .whileTrue(new AimTurretCommand(vision, turret));
+      // //Aim
+      // shooterXbox.a()
+      // .whileTrue(new AimTurretCommand(vision, turret));
+
+            driverXbox.a()
+        .whileTrue(Commands.run(() -> turret.testTurnRight(), turret))
+        .onFalse(Commands.runOnce(() -> turret.stopTurret(), turret));
+
+      driverXbox.b()
+        .whileTrue(Commands.run(() -> turret.testTurnLeft(), turret))
+        .onFalse(Commands.runOnce(() -> turret.stopTurret(), turret));
+
+      
 
       // //Reset odometry
       //  driverXbox.start().onTrue(
