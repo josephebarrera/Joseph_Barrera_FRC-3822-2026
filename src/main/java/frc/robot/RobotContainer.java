@@ -15,6 +15,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import swervelib.SwerveInputStream;
 import frc.robot.subsystems.swervedrive.Vision;
 import frc.robot.commands.swervedrive.AimTurretCommand;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -26,6 +27,7 @@ public class RobotContainer
 
   final CommandXboxController driverXbox = new CommandXboxController(0);
    final CommandXboxController shooterXbox = new CommandXboxController(1);
+
 
     //The robot's subsystems and commands are defined here...
     private final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
@@ -68,73 +70,69 @@ public class RobotContainer
     */
     public RobotContainer()
     {
-      //Configure the trigger bindings
-      configureBindings();
 
       //Configure the PathPlanner commands
       setupPathPlannerCommands();
 
+      //Configure the trigger bindings
+      configureBindings();
+
       DriverStation.silenceJoystickConnectionWarning(true);
+
     }
 
     private void setupPathPlannerCommands()
     {
       NamedCommands.registerCommand("Shoot Forward", shooter.shootForward());
-      NamedCommands.registerCommand("Open Intake Middle", intake.foldOpenIntake());
+      NamedCommands.registerCommand("Open Intake", intake.foldOpenIntake());
     }
 
     private void configureBindings()
     {
       driverXbox.b().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
+      Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveInputStream);
+
+      Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
+      
+      drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
+
       /****************************************************** Trial ******************************************************/
+      //Top Shooter Toggle On and Off
+      shooterXbox.rightBumper()
+        .toggleOnTrue(shooter.spinTopShooter());
 
       //Enable Intake
       shooterXbox.leftBumper()
-      .whileTrue(intake.spinIntakeForward())
-      .onFalse(intake.stopIntake());
+        .whileTrue(intake.spinIntakeForward())
+        .onFalse(intake.stopIntake());
 
       //Open intake
       shooterXbox.povDown()
-      .whileTrue((intake.foldOpenIntake()));
+        .whileTrue((intake.foldOpenIntake()));
 
       //Close intake
       shooterXbox.povUp()
-      .whileTrue(intake.foldCloseIntake());
+        .whileTrue(intake.foldCloseIntake());
 
-      shooterXbox.rightBumper()
-      .toggleOnTrue(shooter.toggleTopShooter());
-
-      //Shoot
+      //
       shooterXbox.rightTrigger()
-        .whileTrue(funnelAndShoot())
-        .onFalse(Commands.parallel(agitator.funnelStop(),shooter.shootStop()));
+        .whileTrue(Commands.parallel(agitator.funnelForward(), shooter.spinShooterIntake()))
+        .onFalse(Commands.parallel(agitator.funnelStop(),shooter.stopShooterIntake()));
 
+      //Turret Movement Right
       driverXbox.a()
         .whileTrue(Commands.run(() -> turret.testTurnRight(), turret))
         .onFalse(Commands.runOnce(() -> turret.stopTurret(), turret));
 
+      //Turret Movement Left
       driverXbox.b()
         .whileTrue(Commands.run(() -> turret.testTurnLeft(), turret))
         .onFalse(Commands.runOnce(() -> turret.stopTurret(), turret));
 
-      //shooterXbox.povLeft().whileTrue(turret.testTurnLeft());
-      //shooterXbox.povRight().whileTrue(turret.testTurnRight());
-
-      // //Reset odometry
-      //  driverXbox.start().onTrue(
-      //   Commands.runOnce(() ->
-      //   {
-      //     drivebase.resetOdometry(null);
-      //   }));
-
+      driverXbox.x()
+        .onTrue(new PathPlannerAuto("Middle Auto"));
       /******************************************************************************************************************/
-
-      Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveInputStream);
-      Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
-
-       
-      drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
         
     }
 
@@ -145,8 +143,7 @@ public class RobotContainer
      */
     public Command getAutonomousCommand()
     {
-      //Return the swerve subsystem command for this path
-      return null;
+      return new PathPlannerAuto("Middle Auto");
     }
 
     public void setMotorBrake(boolean brake)
@@ -154,11 +151,4 @@ public class RobotContainer
       drivebase.setMotorBrake(brake);
     }
 
-     /*********************************************************************** Commands *************************************************************************/
-    public Command funnelAndShoot()
-    {
-      return Commands.parallel(
-      agitator.funnelForward(),
-      shooter.spinShooterIntake());
-    }
 }
