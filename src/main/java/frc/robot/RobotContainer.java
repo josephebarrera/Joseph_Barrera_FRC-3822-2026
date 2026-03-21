@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.swervedrive.Actuator;
 import frc.robot.subsystems.swervedrive.Agitator;
 import frc.robot.subsystems.swervedrive.Intake;
 import frc.robot.subsystems.swervedrive.Shooter;
@@ -47,6 +48,9 @@ public class RobotContainer
     //Create a turret
     Turret turret = new Turret();
 
+    //Create a actuator
+    Actuator actuator = new Actuator();
+
     /**
     * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
     */
@@ -83,29 +87,27 @@ public class RobotContainer
 
     private void setupPathPlannerCommands()
     {
-      NamedCommands.registerCommand("Shoot Forward", shooter.shootForward());
-      NamedCommands.registerCommand("Open Intake", intake.foldOpenIntake());
+      NamedCommands.registerCommand("Close Intake", intake.foldOpenIntake());
     }
 
-    private void configureBindings()
+   private void configureBindings()
     {
       driverXbox.b().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
       Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveInputStream);
 
       Command driveFieldOrientedDirectAngle = drivebase.driveFieldOriented(driveDirectAngle);
-      
+     
       drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
 
-      /****************************************************** Trial ******************************************************/
-      //Top Shooter Toggle On and Off
+      /****************************************************** Shooter Commands ******************************************************/
+      //Top Shooter: Toggle On and Off
       shooterXbox.rightBumper()
         .toggleOnTrue(shooter.spinTopShooter());
 
-      //Enable Intake
+      //Intake: Toggle On and Off 
       shooterXbox.leftBumper()
-        .whileTrue(intake.spinIntakeForward())
-        .onFalse(intake.stopIntake());
+        .toggleOnTrue(intake.spinIntakeForward());
 
       //Open intake
       shooterXbox.povDown()
@@ -115,25 +117,30 @@ public class RobotContainer
       shooterXbox.povUp()
         .whileTrue(intake.foldCloseIntake());
 
-      //
+        //Shoot: Hold R2
       shooterXbox.rightTrigger()
         .whileTrue(Commands.parallel(agitator.funnelForward(), shooter.spinShooterIntake()))
         .onFalse(Commands.parallel(agitator.funnelStop(),shooter.stopShooterIntake()));
 
-      //Turret Movement Right
-      driverXbox.a()
-        .whileTrue(Commands.run(() -> turret.testTurnRight(), turret))
-        .onFalse(Commands.runOnce(() -> turret.stopTurret(), turret));
+      //Y = up Actuator
+      shooterXbox.y().onTrue(actuator.goUpCommand());
 
-      //Turret Movement Left
+      //A = down Actuator
+      shooterXbox.a().onTrue(actuator.goDownCommand());
+      /****************************************************************************************************************************/
+
+      /************************************************* Driver Commands *************************************************/
+      //Turret: Movement Left
       driverXbox.b()
         .whileTrue(Commands.run(() -> turret.testTurnLeft(), turret))
         .onFalse(Commands.runOnce(() -> turret.stopTurret(), turret));
 
-      driverXbox.x()
-        .onTrue(new PathPlannerAuto("Middle Auto"));
+      //Turret: Movement Right
+      driverXbox.a()
+        .whileTrue(Commands.run(() -> turret.testTurnRight(), turret))
+        .onFalse(Commands.runOnce(() -> turret.stopTurret(), turret));
       /******************************************************************************************************************/
-        
+       
     }
 
     /**
@@ -151,4 +158,6 @@ public class RobotContainer
       drivebase.setMotorBrake(brake);
     }
 
+    /************************************************************** Command **************************************************************/
+  
 }

@@ -27,6 +27,10 @@ public class Intake extends SubsystemBase
         return Commands.run(()->
         {
             intake.set(-100.0);
+        })
+        .finallyDo(()->
+        {
+            intake.set(0);
         });
     }
 
