@@ -87,7 +87,7 @@ public class RobotContainer
 
     private void setupPathPlannerCommands()
     {
-      NamedCommands.registerCommand("Close Intake", intake.foldOpenIntake());
+      NamedCommands.registerCommand("Final Open Intake", intake.foldOpenIntake());
     }
 
    private void configureBindings()
